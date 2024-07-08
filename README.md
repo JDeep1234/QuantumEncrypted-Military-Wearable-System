@@ -59,49 +59,32 @@ _Advantages: Keeping in mind the ultimate goal of this hackathon, that is fault 
 ## Code
 
 ```cpp
-#include <TinyGPS++.h>
-#include <SoftwareSerial.h>
+// Define constants for EMA filter
+const float alpha = 0.2;  // Smoothing factor (adjust as needed, between 0 and 1)
+float sensorValueFiltered = 0;  // Initial filtered sensor value
 
-#define PULSE_SENSOR_PIN A0
-#define GPS_RX_PIN 3
-#define GPS_TX_PIN 2
-
-TinyGPSPlus gps;
-SoftwareSerial gpsSerial(GPS_RX_PIN, GPS_TX_PIN); // RX, TX
+// Define the pin where the pulse sensor is connected
+const int pulsePin = A0;
 
 void setup() {
-    // Initialize serial communication for debugging
-    Serial.begin(9600);
-    Serial.println("Pulse Sensor Reading:");
-
-    // Initialize GPS module
-    gpsSerial.begin(9600); // Change baud rate to match your GPS module
+  // Initialize serial communication at 9600 bits per second
+  Serial.begin(9600);
 }
 
 void loop() {
-    // Read pulse sensor value
-    uint16_t pulseValue = analogRead(PULSE_SENSOR_PIN);
+  // Read the value from the pulse sensor
+  int sensorValueRaw = analogRead(pulsePin);
 
-    // Print pulse sensor value to console
-    Serial.print("Pulse Sensor Value: ");
-    Serial.println(pulseValue);
+  // Apply EMA filter
+  sensorValueFiltered = alpha * sensorValueRaw + (1 - alpha) * sensorValueFiltered;
 
-    // Read GPS data
-    while (gpsSerial.available() > 0) {
-        if (gps.encode(gpsSerial.read())) {
-            if (gps.location.isValid()) {
-                // Display GPS location
-                Serial.print("Latitude: ");
-                Serial.print(gps.location.lat(), 6);
-                Serial.print(", Longitude: ");
-                Serial.println(gps.location.lng(), 6);
-            }
-        }
-    }
+  // Print the filtered sensor value to the Serial Monitor and Serial Plotter
+  Serial.println(sensorValueFiltered);
 
-    // Delay for 1 second
-    delay(1000);
+  // Wait for a short period before reading the value again
+  delay(1000); // Adjust the delay as needed
 }
+
 ```
 
 **_Team Members_** - _Bipin Raj C_ , _B Jnyanadeep_ <br>
